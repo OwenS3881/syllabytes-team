@@ -15,29 +15,28 @@ export default function Menu({ state, navigation }) {
     const pathname = usePathname(); // <-- current path
 
     const menuItems = [
-        { label: "Home", icon: home, route: "home" },
-        { label: "Syllabus", icon: syllabus, route: "syllabus" },
-        { label: "Calendar", icon: calendar, route: "calendar" },
-        { label: "Timer", icon: timer, route: "timer" },
-        { label: "Settings", icon: setting, route: "setting" },
+        { label: "Home", icon: home, href: "/home" },
+        { label: "Syllabus", icon: syllabus, href: "/syllabus" },
+        { label: "Calendar", icon: calendar, href: "/calendar" },
+        { label: "Timer", icon: timer, href: "/timer" },
+        { label: "Settings", icon: setting, href: "/settings" },
     ];
 
     return (
         <View style={styles.bottomRectangle}>
-            {menuItems.map((item, index) => {
+           {menuItems.map((item) => {
+                const isActive = pathname === item.href;
                 return (
-                    <TouchableOpacity
-                        key={item.label}
-                        style={styles.menuItem}
-                        onPress={() => {
-                            if (!state.index !== index) {
-                                navigation.navigate(item.route);
-                            }
-                        }}
-                    >
-                        <Image source={item.icon} style={styles.icon} />
-                        <Text style={styles.label}>{item.label}</Text>
-                    </TouchableOpacity>
+                <TouchableOpacity
+                    key={item.label}
+                    style={styles.menuItem}
+                    onPress={() => {
+                    if (!isActive) router.replace(item.href);
+                    }}
+                >
+                    <Image source={item.icon} style={styles.icon} />
+                    <Text style={styles.label}>{item.label}</Text>
+                </TouchableOpacity>
                 );
             })}
         </View>
