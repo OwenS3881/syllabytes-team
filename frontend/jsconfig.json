@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./*"]
+        },
+        "allowJs": true,
+        "checkJs": false,
+        "skipLibCheck": true,
+        "types": []
+    },
+    "exclude": [
+        "node_modules",
+        "dist",
+        "build",
+        "babel.config.js",
+        "metro.config.js"
+    ]
+}
