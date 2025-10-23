@@ -2,15 +2,13 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import sessionEvents from "@/utils/SessionEventBus";
+import LOCAL_IP from "@/constants/localIP";
 
-//local ip needs to be update with computers ip in order to work on expo go app
-//if not testing on expo go, set it to null or empty
-const LOCAL_IP = "10.136.83.10";
 const DEV_URL =
     LOCAL_IP && LOCAL_IP !== ""
         ? `http://${LOCAL_IP}:3000/api`
         : "http://localhost:3000/api";
-const PROD_URL = "https://universityoffreestuff.onrender.com/api";
+const PROD_URL = "";
 
 const BACKEND_URL = __DEV__ ? DEV_URL : PROD_URL;
 const STORAGE_KEY = "tokens";
