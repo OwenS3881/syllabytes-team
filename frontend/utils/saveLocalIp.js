@@ -26,7 +26,7 @@ if (!localIP) {
 
 // Create JS file content
 const output = `// Auto-generated file
-export default LOCAL_IP = "${localIP}";
+export const LOCAL_IP = "${localIP}";
 `;
 
 // Define output path (you can change this)

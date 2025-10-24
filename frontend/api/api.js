@@ -2,7 +2,7 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import sessionEvents from "@/utils/SessionEventBus";
-import LOCAL_IP from "@/constants/localIP";
+import { LOCAL_IP } from "@/constants/localIP";
 
 const DEV_URL =
     LOCAL_IP && LOCAL_IP !== ""
