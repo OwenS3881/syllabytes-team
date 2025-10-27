@@ -1,7 +1,12 @@
-// saveLocalIP.js
-const os = require("os");
-const fs = require("fs");
-const path = require("path");
+// saveLocalIp.mjs
+import os from "os";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Get current directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Get network interfaces
 const interfaces = os.networkInterfaces();
@@ -24,12 +29,12 @@ if (!localIP) {
     process.exit(1);
 }
 
-// Create JS file content
+// Create JS file content as ES module
 const output = `// Auto-generated file
 export const LOCAL_IP = "${localIP}";
 `;
 
-// Define output path (you can change this)
+// Define output path relative to this file
 const filePath = path.join(__dirname, "../constants/localIP.js");
 
 // Write to file

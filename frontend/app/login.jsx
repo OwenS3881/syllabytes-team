@@ -60,7 +60,7 @@ const LoginPage = () => {
         >
             <View style={styles.container}>
                 <Text style={styles.titleIntro}>
-                    It's time to blast off with
+                    It&apos;s time to blast off with
                 </Text>
                 <Text style={styles.title}>Orbit🚀</Text>
                 <View style={styles.inputContainer}>

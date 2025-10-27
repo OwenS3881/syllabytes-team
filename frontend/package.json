@@ -3,13 +3,13 @@
     "main": "expo-router/entry",
     "version": "1.0.0",
     "scripts": {
-        "prestart": "node utils/saveLocalIp.js",
+        "prestart": "node utils/saveLocalIp.mjs",
         "start": "expo start",
         "reset-project": "node ./scripts/reset-project.js",
         "android": "expo start --android",
         "ios": "expo start --ios",
         "web": "expo start --web",
-    "lint": "eslint . --rule \"import/no-unresolved:0\"",
+        "lint": "eslint . --rule \"import/no-unresolved:0\"",
         "test": "jest"
     },
     "dependencies": {

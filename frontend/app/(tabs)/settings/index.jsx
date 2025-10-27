@@ -1,21 +1,27 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import Colors from "@/constants/Colors";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
-  return (
-    <View style={styles.mockpage}>
-      <Text>Settings</Text>
-    </View>
-  );
+    const { logout } = useAuth();
+
+    return (
+        <View style={styles.mockpage}>
+            <Text>Settings</Text>
+            <TouchableOpacity onPress={logout}>
+                <Text style={{ color: Colors.white }}>Logout</Text>
+            </TouchableOpacity>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  mockpage: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.backgroundBlue,
-    color: Colors.backgroundBlue,
-  },
+    mockpage: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: Colors.backgroundBlue,
+        color: Colors.backgroundBlue,
+    },
 });

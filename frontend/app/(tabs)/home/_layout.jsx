@@ -7,15 +7,18 @@ const HomeLayout = () => {
         <Stack
             screenOptions={{
                 headerStyle: {
-                    backgroundColor: Colors.blue500,
+                    backgroundColor: Colors.menuBlue,
                 },
                 headerTintColor: Colors.white,
                 headerTitleStyle: {
                     fontSize: 20,
                     fontWeight: "bold",
+                    fontFamily: "HoltwoodOneSC",
                 },
                 contentStyle: {
-                    backgroundColor: Colors.gray100,
+                    paddingHorizontal: 10,
+                    paddingTop: 10,
+                    backgroundColor: Colors.backgroundBlue,
                 },
             }}
         >
