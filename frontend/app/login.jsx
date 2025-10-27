@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLoading } from "@/context/LoadingContext";
 import { CustomAlert } from "@/utils/CustomAlert";
 import buttonStyles from "@/styles/button";
+import textInputStyles from "@/styles/textInput";
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
@@ -58,17 +59,22 @@ const LoginPage = () => {
             }}
         >
             <View style={styles.container}>
-                <Text style={styles.title}>Login</Text>
+                <Text style={styles.titleIntro}>
+                    It's time to blast off with
+                </Text>
+                <Text style={styles.title}>Orbit🚀</Text>
                 <View style={styles.inputContainer}>
                     <TextInput
-                        style={styles.inputBox}
+                        style={textInputStyles.textInput}
+                        placeholderTextColor={Colors.gray900}
                         placeholder="Email..."
                         autoCapitalize="none"
                         value={email}
                         onChangeText={setEmail}
                     />
                     <TextInput
-                        style={styles.inputBox}
+                        style={textInputStyles.textInput}
+                        placeholderTextColor={Colors.gray900}
                         placeholder="Password..."
                         autoCapitalize="none"
                         secureTextEntry={true}
@@ -84,11 +90,10 @@ const LoginPage = () => {
                         <Text style={buttonStyles.buttonText}>Login</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={buttonStyles.button}
-                        onPress={() => router.push("/signup")}
-                    >
-                        <Text style={buttonStyles.buttonText}>Sign Up</Text>
+                    <TouchableOpacity onPress={() => router.push("/signup")}>
+                        <Text style={styles.pageLink}>
+                            First time? Sign up here!
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -105,10 +110,19 @@ const styles = StyleSheet.create({
         width: "100%",
     },
 
+    titleIntro: {
+        fontSize: 64,
+        marginTop: 20,
+        color: Colors.white,
+        fontFamily: "Gruppo",
+        textAlign: "center",
+    },
+
     title: {
-        fontSize: 40,
-        marginTop: 100,
+        fontSize: 72,
         marginBottom: 50,
+        color: Colors.white,
+        fontFamily: "HoltwoodOneSC",
     },
 
     inputContainer: {
@@ -119,21 +133,18 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
 
-    inputBox: {
-        fontSize: 16,
-        borderColor: Colors.gray700,
-        backgroundColor: Colors.gray100,
-        borderWidth: 1,
-        padding: 10,
-        marginVertical: 5,
-        width: "70%",
-    },
-
     buttonContainer: {
         width: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+    },
+
+    pageLink: {
+        fontSize: 24,
+        color: Colors.white,
+        textDecorationLine: "underline",
+        marginTop: 20,
     },
 });
 

@@ -4,6 +4,8 @@ import Colors from "@/constants/Colors";
 import { useEffect } from "react";
 import { useAlert } from "@/context/CustomAlertContext";
 import { CustomAlert } from "@/utils/CustomAlert";
+import { useFonts } from "expo-font";
+import { Text } from "react-native";
 
 /**
  * Sets up navigation and Auth for all pages
@@ -13,6 +15,11 @@ const RootLayout = () => {
     const router = useRouter();
 
     const { alert } = useAlert();
+
+    const [fontsLoaded] = useFonts({
+        Gruppo: require("@/assets/fonts/Gruppo-Regular.ttf"),
+        HoltwoodOneSC: require("@/assets/fonts/HoltwoodOneSC-Regular.ttf"),
+    });
 
     useEffect(() => {
         CustomAlert.setAlertFunction(alert);
@@ -34,17 +41,18 @@ const RootLayout = () => {
             <Stack
                 screenOptions={{
                     headerStyle: {
-                        backgroundColor: Colors.blue500,
+                        backgroundColor: Colors.menuBlue,
                     },
                     headerTintColor: Colors.white,
                     headerTitleStyle: {
                         fontSize: 20,
                         fontWeight: "bold",
+                        fontFamily: "HoltwoodOneSC",
                     },
                     contentStyle: {
                         paddingHorizontal: 10,
                         paddingTop: 10,
-                        backgroundColor: Colors.gray100,
+                        backgroundColor: Colors.backgroundBlue,
                     },
                 }}
             >

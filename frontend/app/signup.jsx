@@ -15,6 +15,7 @@ import { useLoading } from "@/context/LoadingContext";
 import { CustomAlert } from "@/utils/CustomAlert";
 import API from "@/api/api";
 import buttonStyles from "@/styles/button";
+import textInputStyles from "@/styles/textInput";
 
 const SignUpPage = () => {
     const [email, setEmail] = useState("");
@@ -94,18 +95,20 @@ const SignUpPage = () => {
             }}
         >
             <View style={styles.container}>
-                <Text style={styles.title}>Sign Up</Text>
+                <Text style={styles.title}>Orbit🚀</Text>
 
                 <View style={styles.inputContainer}>
                     <TextInput
-                        style={styles.inputBox}
+                        style={textInputStyles.textInput}
+                        placeholderTextColor={Colors.gray900}
                         placeholder="Email..."
                         autoCapitalize="none"
                         value={email}
                         onChangeText={setEmail}
                     />
                     <TextInput
-                        style={styles.inputBox}
+                        style={textInputStyles.textInput}
+                        placeholderTextColor={Colors.gray900}
                         placeholder="Password..."
                         autoCapitalize="none"
                         secureTextEntry={true}
@@ -113,7 +116,8 @@ const SignUpPage = () => {
                         onChangeText={setPassword}
                     />
                     <TextInput
-                        style={styles.inputBox}
+                        style={textInputStyles.textInput}
+                        placeholderTextColor={Colors.gray900}
                         placeholder="Confirm Password..."
                         autoCapitalize="none"
                         secureTextEntry={true}
@@ -126,26 +130,7 @@ const SignUpPage = () => {
                         style={buttonStyles.button}
                         onPress={onSignUp}
                     >
-                        <Text style={buttonStyles.buttonText}>
-                            Create Account
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={{ flexDirection: "row", marginTop: 10 }}>
-                    <Text style={{ fontSize: 16 }}>
-                        Already have an account?{" "}
-                    </Text>
-                    <TouchableOpacity onPress={() => router.back()}>
-                        <Text
-                            style={{
-                                color: Colors.blue500,
-                                textDecorationLine: "underline",
-                                fontSize: 16,
-                            }}
-                        >
-                            Log in here!
-                        </Text>
+                        <Text style={buttonStyles.buttonText}>Sign Up</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -163,9 +148,11 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 40,
+        fontSize: 72,
+        marginBottom: 25,
         marginTop: 100,
-        marginBottom: 50,
+        color: Colors.white,
+        fontFamily: "HoltwoodOneSC",
     },
 
     inputContainer: {
@@ -174,16 +161,6 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         alignItems: "center",
         marginBottom: 20,
-    },
-
-    inputBox: {
-        fontSize: 16,
-        borderColor: Colors.gray700,
-        backgroundColor: Colors.gray100,
-        borderWidth: 1,
-        padding: 10,
-        marginVertical: 5,
-        width: "70%",
     },
 
     buttonContainer: {

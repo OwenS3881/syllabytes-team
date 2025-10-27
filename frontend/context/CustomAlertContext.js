@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     },
     container: {
         width: "80%",
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.lightBlue,
         borderRadius: 10,
         padding: 20,
         elevation: 4,
@@ -96,27 +96,30 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "bold",
         marginBottom: 12,
+        textAlign: "center",
     },
     message: {
-        fontSize: 16,
+        fontSize: 18,
         marginBottom: 20,
+        textAlign: "center",
     },
     buttonRow: {
         flexDirection: "row",
-        justifyContent: "flex-end",
+        justifyContent: "center",
         flexWrap: "wrap",
     },
     button: {
         marginLeft: 10,
         paddingVertical: 6,
         paddingHorizontal: 12,
-        backgroundColor: Colors.blue500,
+        backgroundColor: Colors.buttonBlue,
         borderRadius: 4,
         marginBottom: 5,
     },
     buttonText: {
         color: Colors.white,
         fontWeight: "600",
+        fontSize: 20,
     },
     destructiveButton: {
         backgroundColor: Colors.red500,
