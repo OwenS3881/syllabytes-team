@@ -1,20 +1,21 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { useAuth } from "@/context/AuthContext";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import Colors from "@/constants/Colors";
 
-const HomePage = () => {
-    const { logout } = useAuth();
-
+export default function Home() {
     return (
-        <View>
-            <Text>HomePage</Text>
-            <TouchableOpacity onPress={logout}>
-                <Text>Logout</Text>
-            </TouchableOpacity>
+        <View style={styles.homepage}>
+            <Text>Home</Text>
         </View>
     );
-};
+}
 
-export default HomePage;
-
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+    homepage: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: Colors.backgroundBlue,
+        color: Colors.backgroundBlue,
+    },
+});

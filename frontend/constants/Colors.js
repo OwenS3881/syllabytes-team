@@ -48,11 +48,3 @@ export default {
     yellow500: "#FFDA33", //black text
     yellow600: "#F5C800", //black text
 };
-
-/**
- * Color Palette Ideas:
- * Blues: https://coolors.co/99c5ff-338bff-006af5-0047a3-00357a
- * Reds: https://coolors.co/ff695c-ff1f0a-a30e00
- * Greens: https://coolors.co/33ff69-00e03c-008f26
- * Yellows: https://coolors.co/ffe15c-ffda33-f5c800
- */
