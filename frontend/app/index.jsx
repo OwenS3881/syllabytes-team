@@ -1,6 +1,5 @@
-import { Redirect } from 'expo-router';
-import menu from '@/components/Menu';
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  return <Redirect href={"/home"} />;
+    return <Redirect href={"/home"} />;
 }
