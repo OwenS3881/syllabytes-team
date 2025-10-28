@@ -18,7 +18,7 @@ export default function TabLayout() {
                 <Tabs.Screen name="syllabus" />
                 <Tabs.Screen name="calendar" />
                 <Tabs.Screen name="timer" />
-                <Tabs.Screen name="setting" />
+                <Tabs.Screen name="settings" />
             </Tabs>
     );
 }
