@@ -6,14 +6,14 @@ export default function Timer() {
   return (
     <View style={styles.page}>
       <View style = {styles.headerRow}>
-      <Text style ={styles.header}>Let's get studying!</Text>
+      <Text style ={styles.header}>{"Let's get studying!"}</Text>
       </View>
       <View style={styles.contentRow}>
         <View style={styles.timerContainer}>
           </View>
         </View>
         <View style={styles.taskRow}>
-          <Text style={styles.subHeader}> Today's Session: </Text>
+          <Text style={styles.subHeader}> {"Today's Session: "} </Text>
           </View>
     </View>
   );
