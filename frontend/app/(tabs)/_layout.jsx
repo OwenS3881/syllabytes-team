@@ -1,12 +1,14 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import Menu from "@/components/Menu";
+import AuthGuard from "@/components/AuthGuard";
 
 /**
  * Sets up navigation and Auth for all pages
  */
 export default function TabLayout() {
     return (
+        <AuthGuard>
             <Tabs
                 screenOptions={{
                     headerShown: false,
@@ -18,7 +20,8 @@ export default function TabLayout() {
                 <Tabs.Screen name="syllabus" />
                 <Tabs.Screen name="calendar" />
                 <Tabs.Screen name="timer" />
-                <Tabs.Screen name="setting" />
+                <Tabs.Screen name="settings" />
             </Tabs>
+        </AuthGuard>
     );
 }

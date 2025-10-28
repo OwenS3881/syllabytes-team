@@ -9,6 +9,7 @@ import yellowStar from "@/assets/images/yellow_star.png";
 import greyStar from "@/assets/images/grey_star.png";
 
 export default function Home() {
+
   const insets = useSafeAreaInsets();
   // Demo data (replace with real data later)
   const upcomingTasks = [
@@ -255,4 +256,19 @@ const styles = StyleSheet.create({
     color: "#E6E9F2",
     fontSize: 10,
   },
+    return (
+        <View style={styles.homepage}>
+            <Text>Home</Text>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    homepage: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: Colors.backgroundBlue,
+        color: Colors.backgroundBlue,
+    },
 });
