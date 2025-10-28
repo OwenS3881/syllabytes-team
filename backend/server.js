@@ -1,16 +1,25 @@
+require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const { randomUUID } = require("crypto");
 
+const { connectDB } = require("./config/db");
+const corsMiddleware = require("./middleware/corsMiddleware");
+const { userAuthMiddleware } = require("./middleware/authMiddleware");
+const authRoutes = require("./routes/authRoutes");
+
 const app = express();
-const port = 3000;
+const PORT = process.env.port || 3000;
 const WEBHOOK_URL = "https://scual.app.n8n.cloud/webhook/syllabite-parser";
 
-app.use(cors());
+connectDB();
+
+app.use(corsMiddleware);
 app.use(express.json({ limit: "2mb" }));
+app.use(cookieParser());
 
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
@@ -43,9 +52,11 @@ const jobs = new Map();
 
 app.use("/uploads", express.static(uploadsDir));
 
-app.get("/", (_req, res) => {
-    res.json({ ok: true });
+app.get("/", (req, res) => {
+    res.send("API is running!");
 });
+
+app.use("/api/auth", authRoutes);
 
 app.post("/api/uploads", upload.array("files"), (req, res) => {
     const id = randomUUID();
@@ -134,6 +145,6 @@ app.get("/api/uploads/:id", (req, res) => {
     res.json(job);
 });
 
-app.listen(port, () => {
-    console.log(`Express app listening at http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Express app listening at http://localhost:${PORT}`);
 });
