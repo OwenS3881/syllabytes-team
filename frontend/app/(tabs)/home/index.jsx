@@ -256,19 +256,4 @@ const styles = StyleSheet.create({
     color: "#E6E9F2",
     fontSize: 10,
   },
-    return (
-        <View style={styles.homepage}>
-            <Text>Home</Text>
-        </View>
-    );
-}
-
-const styles = StyleSheet.create({
-    homepage: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: Colors.backgroundBlue,
-        color: Colors.backgroundBlue,
-    },
 });
