@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Other
 .DS_Store
+
+# Do not commit uploaded files
+backend/uploads/
