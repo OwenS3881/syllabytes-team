@@ -18,6 +18,7 @@ module.exports = defineConfig([
         rules: {
             "no-unused-vars": "warn",
             "react/react-in-jsx-scope": "off",
+            "no-undef": "off",
         },
     },
 ]);
