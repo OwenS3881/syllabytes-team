@@ -5,6 +5,7 @@ export default {
     lightBlue: "#A5D0E7",
     buttonBlue: "#2F3F80",
     borderGray: "#B1BACA",
+    timerBlue: "#2F3F80",
 
     //neutrals
     white: "#fff",
