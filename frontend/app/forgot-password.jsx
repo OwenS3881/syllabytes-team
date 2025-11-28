@@ -33,7 +33,6 @@ const ForgotPasswordPage = () => {
     //email validation
     const isValidEmail = (testEmail) =>
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail);
-    const isUflEmail = (testEmail) => /^[^\s@]+@ufl\.edu$/.test(testEmail);
 
     const sendResetCode = async () => {
         //input validation
@@ -44,11 +43,6 @@ const ForgotPasswordPage = () => {
 
         if (!isValidEmail(email)) {
             CustomAlert.alert("Error", "Email is not valid");
-            return;
-        }
-
-        if (!isUflEmail(email)) {
-            CustomAlert.alert("Error", "Email is not a UFL email");
             return;
         }
 

@@ -9,4 +9,8 @@ router.post("/refresh", authController.handleRefresh);
 router.post("/logout", authController.handleLogout);
 router.get("/userdata", authController.refreshUserData);
 
+router.post("/send-reset-code", authController.sendResetCode);
+router.post("/check-reset-code", authController.checkResetCode);
+router.post("/reset-password", authController.checkResetCodeAndSignup);
+
 module.exports = router;
