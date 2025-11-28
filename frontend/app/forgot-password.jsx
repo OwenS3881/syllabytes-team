@@ -159,7 +159,8 @@ const ForgotPasswordPage = () => {
                     <>
                         <Text style={styles.subTitle}>
                             Enter the email you used to create your account
-                            below, we'll send you a code to reset your password
+                            below, we&apos;ll send you a code to reset your
+                            password
                         </Text>
                         <View style={styles.inputContainer}>
                             <TextInput
