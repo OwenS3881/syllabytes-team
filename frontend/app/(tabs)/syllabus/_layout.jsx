@@ -22,7 +22,8 @@ const SyllabusLayout = () => {
                 },
             }}
         >
-            <Stack.Screen name="index" options={{ title: "Syallbus" }} />
+            <Stack.Screen name="index" options={{ title: "Syllabus" }} />
+            <Stack.Screen name="questions" options={{ title: "Study Plan" }} />
         </Stack>
     );
 };

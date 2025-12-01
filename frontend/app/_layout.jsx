@@ -1,6 +1,7 @@
 import { AuthProvider } from "@/context/AuthContext";
 import { LoadingProvider } from "@/context/LoadingContext";
 import { CustomAlertProvider } from "@/context/CustomAlertContext";
+import { SyllabusProvider } from "@/context/SyllabusContext";
 import RootLayout from "./RootLayout";
 import { useEffect } from "react";
 
@@ -18,7 +19,9 @@ const RootLayoutWrapper = () => {
         <LoadingProvider>
             <CustomAlertProvider>
                 <AuthProvider>
+                    <SyllabusProvider>
                     <RootLayout />
+                    </SyllabusProvider>
                 </AuthProvider>
             </CustomAlertProvider>
         </LoadingProvider>
