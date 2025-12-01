@@ -10,10 +10,12 @@ const { connectDB } = require("./config/db");
 const corsMiddleware = require("./middleware/corsMiddleware");
 const { userAuthMiddleware } = require("./middleware/authMiddleware");
 const authRoutes = require("./routes/authRoutes");
+const studyPlanRoutes = require("./routes/studyPlanRoutes");
 
 const app = express();
 const PORT = process.env.port || 3000;
 const WEBHOOK_URL = "https://scual.app.n8n.cloud/webhook/syllabite-parser";
+const STUDYPLAN_WEBHOOK_URL = "https://scual.app.n8n.cloud/webhook/syllabite-studyplan";
 
 connectDB();
 
@@ -57,6 +59,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/studyplans", studyPlanRoutes);
 
 app.post("/api/uploads", upload.array("files"), (req, res) => {
     const id = randomUUID();
@@ -72,13 +75,28 @@ app.post("/api/uploads", upload.array("files"), (req, res) => {
         return res.status(400).json({ error: "No valid files uploaded" });
     }
 
-    jobs.set(id, { status: "processing", result: null });
-    res.status(200).json({ uploadId: id });
-
+    // public urls for static access
     const fileUrls = files.map((f) => ({
-        ...f,
+        originalName: f.originalName,
+        storedName: f.storedName,
+        size: f.size,
+        mimetype: f.mimetype,
         url: `${req.protocol}://${req.get("host")}/uploads/${f.storedName}`,
     }));
+
+    // internal entries with disk paths
+    const internalFiles = files.map((f) => ({
+        originalName: f.originalName,
+        storedName: f.storedName,
+        size: f.size,
+        mimetype: f.mimetype,
+        diskPath: f.path,
+    }));
+
+    jobs.set(id, { status: "processing", result: null, files: fileUrls, _internalFiles: internalFiles, uploadId: id });
+    res.status(200).json({ uploadId: id });
+
+    // keep paths for webhook streaming
 
     const webhookUrl = WEBHOOK_URL;
 
@@ -110,7 +128,8 @@ app.post("/api/uploads", upload.array("files"), (req, res) => {
                 } catch (_e) {
                     webhookResult = { ok: resp.ok };
                 }
-                jobs.set(id, { status: "completed", result: webhookResult });
+                const prev = jobs.get(id) || {};
+                jobs.set(id, { ...prev, status: "completed", result: webhookResult });
             } else {
                 setTimeout(() => {
                     const resultPayload = {
@@ -123,7 +142,8 @@ app.post("/api/uploads", upload.array("files"), (req, res) => {
                             types: Array.from(new Set(files.map((f) => f.mimetype))),
                         },
                     };
-                    jobs.set(id, { status: "completed", result: resultPayload });
+                    const prev = jobs.get(id) || {};
+                    jobs.set(id, { ...prev, status: "completed", result: resultPayload });
                 }, 1200);
             }
         } catch (err) {
@@ -143,6 +163,35 @@ app.get("/api/uploads/:id", (req, res) => {
     const job = jobs.get(req.params.id);
     if (!job) return res.status(404).json({ status: "not_found" });
     res.json(job);
+});
+
+app.post("/api/study-plan", async (req, res) => {
+    console.log("[StudyPlan] Received request");
+    try {
+        const payload = req.body || {};
+        console.log("[StudyPlan] Payload:", JSON.stringify(payload, null, 2));
+        
+        console.log("[StudyPlan] Sending to webhook:", STUDYPLAN_WEBHOOK_URL);
+        const resp = await fetch(STUDYPLAN_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        console.log("[StudyPlan] Webhook response status:", resp.status);
+
+        let data = null;
+        try {
+            data = await resp.json();
+            console.log("[StudyPlan] Webhook response data:", JSON.stringify(data, null, 2));
+        } catch (_e) {
+            data = { ok: resp.ok };
+            console.log("[StudyPlan] Webhook returned non-JSON response");
+        }
+        res.json({ ok: true, forwarded: true, status: resp.status, data });
+    } catch (err) {
+        console.error("[StudyPlan] Error:", err);
+        res.status(500).json({ ok: false, error: err.message || "Failed to forward study plan" });
+    }
 });
 
 app.listen(PORT, () => {
