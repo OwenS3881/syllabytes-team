@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform, ScrollView, FlatList, Modal, TextInput } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform, ScrollView, Modal, TextInput } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -625,7 +625,7 @@ function CoursePage({ course, courseIndex, availableHeight, onEditSection }) {
     if (!list || list.length === 0) {
       return (
         <Text style={styles.emptyText}>
-          Orbit couldn't detect any {label?.toLowerCase?.()}. Would you like to add some?
+          Orbit could not detect any {label?.toLowerCase?.()}. Would you like to add some?
         </Text>
       );
     }
