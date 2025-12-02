@@ -190,3 +190,43 @@ exports.handleLogout = async (req, res) => {
         res.status(500).json({ error: `Server error. ${err}` });
     }
 };
+
+//change password
+exports.handleChangePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+
+        const token = authHeader.split(" ")[1];
+        const payload = jwt.verify(token, ACCESS_TOKEN_SECRET);
+        const user = await User.findById(payload.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Verify current password
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Current password is incorrect" });
+        }
+
+        // Validate new password
+        if (!newPassword || !newPassword.trim()) {
+            return res.status(400).json({ message: "New password is required" });
+        }
+
+        // Update password
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ message: "Password changed successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: `Server error. ${err}` });
+    }
+};

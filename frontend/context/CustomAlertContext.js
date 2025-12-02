@@ -84,13 +84,16 @@ const styles = StyleSheet.create({
         backgroundColor: "#00000066",
         justifyContent: "center",
         alignItems: "center",
+        zIndex: 9999,
+        elevation: 9999,
     },
     container: {
         width: "80%",
         backgroundColor: Colors.lightBlue,
         borderRadius: 10,
         padding: 20,
-        elevation: 4,
+        elevation: 10000,
+        zIndex: 10000,
     },
     title: {
         fontSize: 18,
