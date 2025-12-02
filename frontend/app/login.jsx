@@ -95,6 +95,11 @@ const LoginPage = () => {
                             First time? Sign up here!
                         </Text>
                     </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => router.push("/forgot-password")}
+                    >
+                        <Text style={styles.pageLink}>Forgot password?</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </TouchableWithoutFeedback>

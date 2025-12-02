@@ -1,2 +1,2 @@
 // Auto-generated file
-export const LOCAL_IP = "10.136.121.74";
+export const LOCAL_IP = "10.136.1.243";
