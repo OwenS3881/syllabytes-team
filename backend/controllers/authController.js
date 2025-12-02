@@ -193,6 +193,95 @@ exports.handleLogout = async (req, res) => {
     }
 };
 
+//send the code to reset a user's password
+exports.sendResetCode = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email || !isValidEmail(email)) {
+        return res.status(400).json({ message: "Invalid email" });
+    }
+
+    //make sure email exists
+    const availabilityCheck = await checkEmailAvailable(email);
+    if (!availabilityCheck) {
+        return res.status(409).json({ message: "Email does not exist" });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+
+    try {
+        //clear existing code
+        const oldCode = await ResetCode.findOne({ email });
+        if (oldCode) {
+            await ResetCode.deleteOne({ email });
+        }
+
+        //store code in db
+        const codeObj = ResetCode({
+            email,
+            code,
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000), //lasts for 10 mins
+        });
+        await codeObj.save();
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Your Reset Code for Orbit",
+            text: `Your Orbit Reset code is: ${code}. You have 10 minutes to reset your password.`,
+        });
+
+        res.status(200).json({ message: "Code sent to email" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: `Server error. ${err}` });
+    }
+};
+
+//receive reset code and check if valid
+exports.checkResetCode = async (req, res) => {
+    const { email, code } = req.body;
+
+    const codeRecord = await ResetCode.findOne({ email });
+    if (
+        !codeRecord ||
+        codeRecord.code !== code ||
+        new Date() > new Date(codeRecord.expiresAt)
+    ) {
+        return res.status(400).json({ message: "Invalid or expired code" });
+    }
+
+    res.status(200).json({ message: "Valid code" });
+};
+
+//receive reset code and change password of user
+exports.checkResetCodeAndSignup = async (req, res) => {
+    const { email, password, code } = req.body;
+
+    if (!password.trim()) {
+        return res.status(400).json({ message: "Password is required" });
+    }
+
+    const codeRecord = await ResetCode.findOne({ email });
+    if (
+        !codeRecord ||
+        codeRecord.code !== code ||
+        new Date() > new Date(codeRecord.expiresAt)
+    ) {
+        return res.status(400).json({ message: "Invalid or expired code" });
+    }
+
+    //get rid of code
+    await ResetCode.deleteOne({ email });
+
+    //find user
+    const userRecord = await User.findOne({ email });
+    userRecord.password = password;
+    await userRecord.save();
+
+    res.status(200).json({ message: "Password updated" });
+};
+
 //change password
 exports.handleChangePassword = async (req, res) => {
     try {
@@ -214,12 +303,16 @@ exports.handleChangePassword = async (req, res) => {
         // Verify current password
         const isMatch = await user.comparePassword(currentPassword);
         if (!isMatch) {
-            return res.status(401).json({ message: "Current password is incorrect" });
+            return res
+                .status(401)
+                .json({ message: "Current password is incorrect" });
         }
 
         // Validate new password
         if (!newPassword || !newPassword.trim()) {
-            return res.status(400).json({ message: "New password is required" });
+            return res
+                .status(400)
+                .json({ message: "New password is required" });
         }
 
         // Update password
