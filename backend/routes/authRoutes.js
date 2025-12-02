@@ -8,6 +8,7 @@ router.post("/login", authController.handleLogin);
 router.post("/refresh", authController.handleRefresh);
 router.post("/logout", authController.handleLogout);
 router.get("/userdata", authController.refreshUserData);
+router.post("/change-password", authController.handleChangePassword);
 
 router.post("/send-reset-code", authController.sendResetCode);
 router.post("/check-reset-code", authController.checkResetCode);
