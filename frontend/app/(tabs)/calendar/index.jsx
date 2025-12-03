@@ -1,14 +1,13 @@
-import React, { useMemo, useEffect, useRef, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
     SafeAreaView,
     ScrollView,
-    FlatList,
-    Dimensions,
     View,
     Text,
     StyleSheet,
-    Image,
     TouchableOpacity,
+    ActivityIndicator,
+    useWindowDimensions,
 } from "react-native";
 import {
     addWeeks,
@@ -16,22 +15,60 @@ import {
     startOfWeek,
     isSameDay,
     format,
-    differenceInMinutes,
-    isSameHour,
 } from "date-fns";
+import { useFocusEffect } from "expo-router";
 import Colors from "@/constants/Colors";
 import CalendarEvent from "@/components/CalendarEvent";
+import API from "@/api/api";
+import {
+    transformCalendarEntries,
+    filterEventsForWeek,
+    getEventsForDay,
+    calculateTaskPosition,
+} from "@/utils/calendarUtils";
+const HOUR_HEIGHT = 60;
+const DEADLINE_ROW_HEIGHT = 50;
+const START_HOUR = 6;
+const END_HOUR = 23;
+const TIME_LABEL_WIDTH = 50;
 
-const SCREEN_WIDTH = Dimensions.get("window").width; // have width to adjust grid
-const DAY_COLUMN_WIDTH = (SCREEN_WIDTH - 56) / 7;
-const HOUR_HEIGHT = 60; // pixels per hour
+function DeadlineRow({ days, deadlines, dayColumnWidth }) {
+    return (
+        <View style={styles.deadlineRow}>
+            <View style={[styles.deadlineLabelCell, { width: TIME_LABEL_WIDTH }]}>
+                <Text style={styles.deadlineLabelText}>Due</Text>
+            </View>
+            {days.map((day) => {
+                const dayDeadlines = getEventsForDay(deadlines, day);
+                return (
+                    <View
+                        key={day.toISOString()}
+                        style={[styles.deadlineDayCell, { width: dayColumnWidth }]}
+                    >
+                        {dayDeadlines.slice(0, 2).map((deadline) => (
+                            <CalendarEvent
+                                key={deadline.id}
+                                event={deadline}
+                                compact
+                                style={styles.deadlineEvent}
+                            />
+                        ))}
+                        {dayDeadlines.length > 2 && (
+                            <Text style={styles.moreText}>+{dayDeadlines.length - 2}</Text>
+                        )}
+                    </View>
+                );
+            })}
+        </View>
+    );
+}
 
-function WeekGrid({ weekStart, events }) {
+function WeekGrid({ weekStart, deadlines, tasks, screenWidth }) {
+    const dayColumnWidth = (screenWidth - TIME_LABEL_WIDTH) / 7;
+    
     const hours = useMemo(() => {
         const hrs = [];
-        for (let i = 0; i < 24; i++) {
-            hrs.push(i);
-        }
+        for (let i = START_HOUR; i <= END_HOUR; i++) hrs.push(i);
         return hrs;
     }, []);
 
@@ -39,97 +76,100 @@ function WeekGrid({ weekStart, events }) {
         return Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
     }, [weekStart]);
 
-    const gridHeight = 24 * HOUR_HEIGHT; // 24 hours
+    const gridHeight = (END_HOUR - START_HOUR + 1) * HOUR_HEIGHT;
+
+    const weekDeadlines = useMemo(() => filterEventsForWeek(deadlines, weekStart), [deadlines, weekStart]);
+    const weekTasks = useMemo(() => filterEventsForWeek(tasks, weekStart), [tasks, weekStart]);
 
     return (
-        <View
-            style={[
-                styles.gridContainer,
-                { height: gridHeight, width: SCREEN_WIDTH },
-            ]}
-        >
-            {/* month & year label header */}
-            <View style={styles.MonthHeader}>
-                <Text style={styles.MonthHeaderText}>
-                    {format(weekStart, "MMMM yyyy")}
-                </Text>
-            </View>
-
-            {/* day labels header */}
+        <View style={styles.gridContainer}>
+            {/* Day labels header */}
             <View style={styles.DayHeaderRow}>
-                <View style={styles.timeLabelCell} />
-                {days.map((day) => (
+                <View style={{ width: TIME_LABEL_WIDTH }} />
+                {days.map((day) => {
+                    const isToday = isSameDay(day, new Date());
+                    return (
                     <View
                         key={day.toISOString()}
-                        style={[
-                            styles.DayHeaderCell,
-                            { width: DAY_COLUMN_WIDTH },
-                        ]}
+                            style={[styles.DayHeaderCell, { width: dayColumnWidth }]}
                     >
-                        <Text style={styles.DayHeaderText}>
+                            <Text style={[styles.DayHeaderText, isToday && styles.todayHeaderText]}>
                             {format(day, "EEE")}
                         </Text>
-                        <Text style={styles.DayHeaderNumber}>
+                            <View style={[styles.dayNumberContainer, isToday && styles.todayCircle]}>
+                                <Text style={[styles.DayHeaderNumber, isToday && styles.todayNumber]}>
                             {format(day, "d")}
                         </Text>
                     </View>
-                ))}
+                        </View>
+                    );
+                })}
             </View>
 
-            {/* scrollable times + day columns */}
+            {/* Deadline row */}
+            <DeadlineRow days={days} deadlines={weekDeadlines} dayColumnWidth={dayColumnWidth} />
+
+            {/* Time grid with tasks - scrollable */}
             <ScrollView
-                style={{ flex: 1 }}
+                style={styles.timeScrollView}
                 contentContainerStyle={{ height: gridHeight }}
+                showsVerticalScrollIndicator={true}
             >
-                <View style={{ flexDirection: "row", flex: 1 }}>
+                <View style={styles.timeGridRow}>
                     {/* Time Labels Column */}
-                    <View style={styles.timeLabelsCell}>
+                    <View style={[styles.timeLabelsCell, { width: TIME_LABEL_WIDTH }]}>
                         {hours.map((hour) => (
-                            <View
-                                key={hour}
-                                style={[
-                                    styles.timeLabelCell,
-                                    { height: HOUR_HEIGHT },
-                                ]}
-                            >
+                            <View key={hour} style={[styles.timeLabelCell, { height: HOUR_HEIGHT }]}>
                                 <Text style={styles.timeLabelText}>
-                                    {format(
-                                        new Date().setHours(hour, 0, 0, 0),
-                                        "ha"
-                                    )}
+                                    {format(new Date().setHours(hour, 0, 0, 0), "ha")}
                                 </Text>
                             </View>
                         ))}
                     </View>
 
                     {/* Days Columns */}
-                    {days.map((day) => (
+                    {days.map((day) => {
+                        const dayTasks = getEventsForDay(weekTasks, day)
+                            .sort((a, b) => (a.taskOrder || 0) - (b.taskOrder || 0));
+                        const isToday = isSameDay(day, new Date());
+                        
+                        return (
                         <View
                             key={day.toISOString()}
-                            style={{
-                                width: DAY_COLUMN_WIDTH,
-                                borderLeftColor: Colors.borderGray,
-                                borderLeftWidth: 1,
-                            }}
-                        >
-                            {/* Horizontal hour lines */}
+                                style={[
+                                    styles.dayColumn,
+                                    { width: dayColumnWidth, height: gridHeight },
+                                    isToday && styles.todayColumn,
+                                ]}
+                            >
                             {hours.map((h) => (
+                                    <View key={h} style={styles.hourCell} />
+                                ))}
+                                
+                                {dayTasks.map((task, index) => {
+                                    const position = calculateTaskPosition(dayTasks, index, HOUR_HEIGHT);
+                                    const adjustedTop = position.top - (START_HOUR * HOUR_HEIGHT);
+                                    
+                                    if (adjustedTop < 0 || adjustedTop >= gridHeight) return null;
+                                    
+                                    return (
                                 <View
-                                    key={h}
-                                    style={{
-                                        height: HOUR_HEIGHT,
-                                        borderTopColor: Colors.borderGray,
-                                        borderTopWidth: 1,
-                                    }}
-                                >
-                                    {isSameDay(day, Date.now()) && (
-                                        <CalendarEvent />
-                                    )}
+                                            key={task.id}
+                                            style={[
+                                                styles.taskEventContainer,
+                                                {
+                                                    top: adjustedTop,
+                                                    height: Math.min(position.height, gridHeight - adjustedTop),
+                                                },
+                                            ]}
+                                        >
+                                            <CalendarEvent event={task} style={styles.taskEvent} />
                                 </View>
-                            ))}
-                            {/* Event rendering as a component TB made*/}
+                                    );
+                                })}
                         </View>
-                    ))}
+                        );
+                    })}
                 </View>
             </ScrollView>
         </View>
@@ -137,176 +177,238 @@ function WeekGrid({ weekStart, events }) {
 }
 
 export default function Calendar() {
+    const { width: screenWidth } = useWindowDimensions();
     const today = new Date();
-    const initialWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday starts week
-    const pivot = 200; // arbitrary pivot date for event generation
-    const weeks = Array.from({ length: pivot * 2 + 1 }, (_, i) => i - pivot);
-    const [visibleWeekStart, setVisibleWeekStart] = useState(initialWeekStart);
-    const [currentOffset, setCurrentOffset] = useState(0); // offset from pivot
+    const initialWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+    
+    const [weekOffset, setWeekOffset] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const [calendarData, setCalendarData] = useState({ deadlines: [], tasks: [] });
 
-    const listRef = useRef(null);
-    const renderWeek = ({ item }) => (
-        <WeekGrid weekStart={addWeeks(initialWeekStart, item)} events={[]} />
+    const currentWeekStart = useMemo(() => addWeeks(initialWeekStart, weekOffset), [initialWeekStart, weekOffset]);
+
+    const fetchCalendarEntries = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await API.get("/studyplans/calendar");
+            const entries = response.data.entries || [];
+            const transformed = transformCalendarEntries(entries);
+            setCalendarData(transformed);
+        } catch (err) {
+            setCalendarData({ deadlines: [], tasks: [] });
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchCalendarEntries();
+        }, [fetchCalendarEntries])
     );
 
-    const onViewableItemsChanged = useRef(({ viewableItems }) => {
-        const first = viewableItems[0];
-        if (first) {
-            const offset = first.item; // -200..+200
-            setCurrentOffset(offset);
-            setVisibleWeekStart(addWeeks(initialWeekStart, offset));
-        }
-    }).current;
-
-    const goPrevWeek = () =>
-        listRef.current?.scrollToIndex({
-            index: pivot + (currentOffset - 1),
-            animated: true,
-        });
-    const goNextWeek = () =>
-        listRef.current?.scrollToIndex({
-            index: pivot + (currentOffset + 1),
-            animated: true,
-        });
-    const goToday = () =>
-        listRef.current?.scrollToIndex({ index: pivot, animated: true });
+    const goPrevWeek = () => setWeekOffset((prev) => prev - 1);
+    const goNextWeek = () => setWeekOffset((prev) => prev + 1);
+    const goToday = () => setWeekOffset(0);
 
     return (
-        <ScrollView>
             <SafeAreaView style={styles.basepage}>
+            {/* Navigation Bar */}
                 <View style={styles.navBar}>
-                    <TouchableOpacity
-                        onPress={goPrevWeek}
-                        style={styles.chevronBtn}
-                    >
+                <TouchableOpacity onPress={goPrevWeek} style={styles.chevronBtn}>
                         <Text style={styles.chevronText}>‹</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={goToday} style={styles.todayBtn}>
-                        <Text style={styles.todayText}>Today</Text>
+                    <Text style={styles.todayBtnText}>Today</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={goNextWeek}
-                        style={styles.chevronBtn}
-                    >
+                <TouchableOpacity onPress={goNextWeek} style={styles.chevronBtn}>
                         <Text style={styles.chevronText}>›</Text>
                     </TouchableOpacity>
                     <Text style={styles.navMonth}>
-                        {format(visibleWeekStart, "MMMM yyyy")}
+                    {format(currentWeekStart, "MMMM yyyy")}
                     </Text>
+                {isLoading && (
+                    <ActivityIndicator 
+                        size="small" 
+                        color={Colors.lightBlue} 
+                        style={{ marginLeft: 10 }}
+                    />
+                )}
                 </View>
 
-                <FlatList
-                    ref={listRef}
-                    horizontal
-                    pagingEnabled
-                    data={weeks}
-                    keyExtractor={(i) => String(i)}
-                    renderItem={renderWeek}
-                    initialScrollIndex={pivot}
-                    getItemLayout={(_, index) => ({
-                        length: SCREEN_WIDTH,
-                        offset: SCREEN_WIDTH * index,
-                        index,
-                    })}
-                    onViewableItemsChanged={onViewableItemsChanged}
-                    viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
-                    showsHorizontalScrollIndicator={false}
-                    style={{ flex: 1, alignSelf: "stretch" }}
+            {/* Single Week Grid */}
+            <WeekGrid 
+                weekStart={currentWeekStart}
+                deadlines={calendarData.deadlines}
+                tasks={calendarData.tasks}
+                screenWidth={screenWidth}
                 />
             </SafeAreaView>
-        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     basepage: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
         backgroundColor: Colors.backgroundBlue,
-        color: Colors.backgroundBlue,
     },
     gridContainer: {
         flex: 1,
         backgroundColor: Colors.backgroundBlue,
-        zIndex: 5,
     },
-    MonthHeader: {
-        paddingVertical: 14,
-        alignItems: "center",
-        borderBottomColor: Colors.borderGray,
-        borderBottomWidth: 2,
+    timeScrollView: {
+        flex: 1,
     },
-    MonthHeaderText: {
-        color: Colors.white,
-        fontSize: 24,
-        fontWeight: "bold",
+    timeGridRow: {
+        flexDirection: "row",
     },
     DayHeaderRow: {
         flexDirection: "row",
         paddingVertical: 8,
         borderBottomColor: Colors.borderGray,
-        borderBottomWidth: 2,
-    },
-    timeLabelCell: {
-        width: 56,
-        paddingRight: 6,
-    },
-    timeLabelsCell: {
-        borderRightColor: Colors.borderGray,
-        borderRightWidth: 1,
+        borderBottomWidth: 1,
     },
     DayHeaderCell: {
         alignItems: "center",
     },
     DayHeaderText: {
-        color: Colors.white,
-        fontSize: 16,
-        fontWeight: "bold",
+        color: Colors.gray400,
+        fontSize: 11,
+        fontWeight: "600",
+        textTransform: "uppercase",
+    },
+    todayHeaderText: {
+        color: Colors.lightBlue,
+    },
+    dayNumberContainer: {
+        width: 26,
+        height: 26,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 13,
+        marginTop: 2,
+    },
+    todayCircle: {
+        backgroundColor: Colors.buttonBlue,
     },
     DayHeaderNumber: {
         color: Colors.white,
         fontSize: 14,
+        fontWeight: "600",
+    },
+    todayNumber: {
+        color: Colors.white,
+        fontWeight: "bold",
+    },
+    
+    deadlineRow: {
+        flexDirection: "row",
+        minHeight: DEADLINE_ROW_HEIGHT,
+        borderBottomColor: Colors.borderGray,
+        borderBottomWidth: 1,
+        backgroundColor: Colors.darkGray700,
+    },
+    deadlineLabelCell: {
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    deadlineLabelText: {
+        fontSize: 9,
+        color: Colors.red400,
+        fontWeight: "700",
+        textTransform: "uppercase",
+    },
+    deadlineDayCell: {
+        padding: 2,
+        borderLeftColor: Colors.borderGray,
+        borderLeftWidth: 1,
+        justifyContent: "flex-start",
+    },
+    deadlineEvent: {
+        marginBottom: 2,
+        height: 18,
+    },
+    moreText: {
+        fontSize: 8,
+        color: Colors.gray500,
+        textAlign: "center",
+    },
+    
+    timeLabelCell: {
+        paddingRight: 4,
+        justifyContent: "flex-start",
+    },
+    timeLabelsCell: {
+        borderRightColor: Colors.borderGray,
+        borderRightWidth: 1,
     },
     timeLabelText: {
-        fontSize: 12,
-        color: Colors.gray500,
+        fontSize: 9,
+        color: Colors.gray600,
         textAlign: "right",
     },
+    
+    dayColumn: {
+        borderLeftColor: Colors.borderGray,
+        borderLeftWidth: 1,
+        position: "relative",
+    },
+    todayColumn: {
+        backgroundColor: "rgba(47, 63, 128, 0.15)",
+    },
+    hourCell: {
+        height: HOUR_HEIGHT,
+        borderTopColor: Colors.darkGray600,
+        borderTopWidth: 1,
+    },
+    
+    taskEventContainer: {
+        position: "absolute",
+        left: 1,
+        right: 1,
+        zIndex: 10,
+    },
+    taskEvent: {
+        flex: 1,
+        borderRadius: 3,
+    },
+    
     navBar: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 8,
-        paddingVertical: 4,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
         borderBottomColor: Colors.borderGray,
         borderBottomWidth: 1,
+        backgroundColor: Colors.backgroundBlue,
     },
     chevronBtn: {
-        paddingHorizontal: 3,
-        paddingVertical: 1,
-        borderRadius: 3,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 4,
         backgroundColor: Colors.darkGray600,
     },
     chevronText: {
         color: Colors.white,
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: "600",
     },
     todayBtn: {
         marginHorizontal: 8,
-        paddingHorizontal: 12,
+        paddingHorizontal: 14,
         paddingVertical: 6,
-        borderRadius: 14,
-        backgroundColor: Colors.darkGray600,
+        borderRadius: 16,
+        backgroundColor: Colors.buttonBlue,
     },
-    todayText: {
+    todayBtnText: {
         color: Colors.white,
         fontWeight: "600",
+        fontSize: 13,
     },
     navMonth: {
-        marginLeft: 10,
+        marginLeft: 12,
         color: Colors.white,
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: "700",
     },
 });
