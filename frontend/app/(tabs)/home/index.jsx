@@ -63,12 +63,15 @@ export default function Home() {
         });
         
       
-      // Take top 3 tasks
-      const top3 = allTasks.slice(0, 3).map(t => t.text || "Untitled task");
+      // Take top 3 tasks with dates
+      const top3 = allTasks.slice(0, 3).map(t => {
+        const dateStr = t.dueDate ? `(${t.dueDate.toLocaleDateString()})` : '';
+        return `${t.text || "Untitled task"} ${dateStr}`;
+      });
       setUpcomingTasks(top3.length > 0 ? top3 : ["No tasks available"]);
       
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.log("Error fetching tasks:", error);
       setUpcomingTasks(["Load syllabus to see your tasks here!"]);
     } finally {
       setLoading(false);
